@@ -3,11 +3,11 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Fri Aug 07 2015 18:32:56 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Aug 07 2015 21:33:33 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Aug 07 2015 18:32:56 GMT-0700 (PDT)";
-        var CHECKSUM = 47723814520;
+        var APP_BUILD_DATE = "Fri Aug 07 2015 21:33:33 GMT-0700 (PDT)";
+        var CHECKSUM = 49918856801;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -26,7 +26,8 @@ Ext.define('Rally.apps.kanban.Column', {
     getStoreFilter: function (model) {
         var filters = [];
         Ext.Array.push(filters, this.callParent(arguments));
-        if (model.elementName === 'HierarchicalRequirement') {
+        
+        if (model.elementName === 'HierarchicalRequirement' ) {
             if (this.context.getSubscription().StoryHierarchyEnabled) {
                 filters.push({
                     property: 'DirectChildrenCount',
@@ -547,7 +548,7 @@ Ext.define('Rally.apps.common.RowSettingsField', {
          * @cfg {String[]}
          * Array of models for which to list fields for
          */
-        modelNames: ['userstory'],
+        modelNames: ['userstory', 'defect'],
 
         /**
          * @cfg {String[]}
@@ -618,14 +619,26 @@ Ext.define('Rally.apps.common.RowSettingsField', {
     },
 
     _getRowableFields: function (models) {
-        var artifactModel = Rally.data.wsapi.ModelBuilder.buildCompositeArtifact(models, this.context),
-            allFields = artifactModel.getFields(),
+        var rowableFields = [];
+        
+        if ( Rally.getApp().model ) {
+            var allFields = Rally.getApp().model.getFields();
+            rowableFields = _.filter(allFields, function (field) {
+                var attr = field.attributeDefinition;
+                return attr && !attr.Hidden  &&
+                    ( this.isAllowedFieldFn(field) || _.contains(this.whiteListFields, field.displayName));
+            }, this);
+        } else {
+            var artifactModel = Rally.data.wsapi.ModelBuilder.buildCompositeArtifact(models, this.context),
+                allFields = artifactModel.getFields();
+            
             rowableFields = _.filter(allFields, function (field) {
                 var attr = field.attributeDefinition;
                 return attr && !attr.Hidden && attr.Sortable &&
                     ((artifactModel.getModelsForField(field).length === models.length &&
                     this.isAllowedFieldFn(field)) || _.contains(this.whiteListFields, field.displayName));
             }, this);
+        }
 
         return _.map(rowableFields, function(field) {
             return {
@@ -670,6 +683,7 @@ Ext.define('Rally.apps.kanban.Settings', {
     ],
 
     getFields: function(config) {
+        
         var items = [
             {
                 name: 'groupByField',
@@ -692,29 +706,6 @@ Ext.define('Rally.apps.kanban.Settings', {
                     }
                 },
                 bubbleEvents: ['fieldselected', 'fieldready']
-            },
-            
-            {
-                name: 'changeReasonField',
-                xtype: 'rallyfieldcombobox',
-                model: Ext.identityFn('Defect'),
-                margin: '10px 0 0 0',
-                fieldLabel: 'Chg Reason Field',
-                listeners: {
-                    select: function(combo) {
-                        this.fireEvent('reasonFieldSelected', combo.getRecord().get('fieldDefinition'),true);
-                    },
-                    ready: function(combo) {
-                        combo.store.filterBy(function(record) {
-                            var attr = record.get('fieldDefinition').attributeDefinition;
-                            return attr && !attr.ReadOnly && attr.Constrained && attr.AttributeType !== 'OBJECT' && attr.AttributeType !== 'COLLECTION';
-                        });
-                        if (combo.getRecord()) {
-                            this.fireEvent('reasonFieldSelected', combo.getRecord().get('fieldDefinition'),false);
-                        }
-                    }
-                },
-                bubbleEvents: ['reasonFieldSelected', 'fieldready']
             },
             
             {
@@ -751,10 +742,8 @@ Ext.define('Rally.apps.kanban.Settings', {
             readyEvent: 'ready',
             isAllowedFieldFn: function(field) {
                 var attr = field.attributeDefinition;
-                console.log(attr.Name, attr);
-                
                 return (attr.Custom && (attr.Constrained || attr.AttributeType.toLowerCase() !== 'string') ||
-                    attr.Constrained || _.contains(['boolean'], attr.AttributeType.toLowerCase())) &&
+                    attr.Constrained || _.contains(['boolean','tsextended'], attr.AttributeType.toLowerCase())) &&
                     !_.contains(['web_link', 'text', 'date'], attr.AttributeType.toLowerCase());
             },
             explicitFields: [
@@ -762,26 +751,6 @@ Ext.define('Rally.apps.kanban.Settings', {
            ]
         });
         
-//        items.push({
-//            name: 'columnChangeReasonField',
-//            xtype: 'changesettingsfield',
-//            fieldLabel: 'Change Reason Field',
-//            margin: '10 0 0 0',
-//            checkboxName: 'showChangeReasonPopup',
-//            fieldboxName: 'changeReasonField',
-//            mapsToMultiplePreferenceKeys: ['showChangeReasonPopup', 'changeReasonField'],
-//            readyEvent: 'ready',
-//            isAllowedFieldFn: function(field) {
-//                var attr = field.attributeDefinition;
-//                return (attr.Custom && (attr.Constrained || attr.AttributeType.toLowerCase() !== 'string') ||
-//                    attr.Constrained || _.contains(['boolean'], attr.AttributeType.toLowerCase())) &&
-//                    !_.contains(['web_link', 'text', 'date'], attr.AttributeType.toLowerCase());
-//            },
-//            explicitFields: [
-//                
-//           ]
-//        });
-//        
         items.push(
             {
                 name: 'hideReleasedCards',
@@ -967,6 +936,7 @@ Ext.define('Rally.technicalservices.Logger',{
 
 Ext.define('Rally.technicalservices.ModelBuilder',{
     singleton: true,
+    
     getModel: function(modelType){
         var deferred = Ext.create('Deft.Deferred');
         Rally.data.ModelFactory.getModel({
@@ -977,17 +947,92 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
         });
         return deferred;
     },
-    build: function(model) {
+    
+    getPINames: function() {
+        var deferred = Ext.create('Deft.Deferred');
+        console.log('getPINames');
+        
+        var store_config = {
+            autoLoad: false,
+            remoteFilter: true,
+            model: Ext.identityFn('TypeDefinition'),
+            sorters: {
+                property: 'Ordinal',
+                direction: 'Desc'
+            },
+            filters: [
+                {
+                    property: 'Parent.Name',
+                    operator: '=',
+                    value: 'Portfolio Item'
+                },
+                {
+                    property: 'Creatable',
+                    operator: '=',
+                    value: 'true'
+                }
+            ]
+        };
+        
+        Ext.create('Rally.data.wsapi.Store', store_config).load({
+            callback : function(records, operation, successful) {
+                if (successful){
+                    deferred.resolve(Ext.Array.map(records,function(record) {
+                        return record.get('ElementName');
+                    }));
+                } else {
+                    console.error("Failed: ", operation);
+                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
+                }
+            }
+        });
+        
+        return deferred;
+    },
+    
+    build: function(model,pi_parent_name) {
         var me = this;
         
-        return Ext.define('Rally.technicalservices.model.ExtendedModel', {
+        console.log('build with', pi_parent_name);
+        
+        var pi_fields = Ext.Array.filter(model.getFields(), function(field) {
+            return (
+                !Ext.isEmpty(field.attributeDefinition) &&  
+                    /PortfolioItem/.test(field.attributeDefinition.SchemaType) &&
+                    field.name !== 'PortfolioItem'
+            );
+        });
+        
+        var pi_name = 'Feature';
+        
+        if ( pi_fields.length > 0 ) {
+            pi_name = pi_fields[0].name;
+        }
+        
+        return Ext.define('Rally.technicalservices.model.TSExtendedModel', {
             extend: model,
+            elementName: 'TSExtendedModel',
             fields: [{
-                name: 'Grandparent',
-                defaultValue: -1,
-                displayName: 'Grandparent'
+                name: pi_name + '.Parent',
+                defaultValue: 'None',
+                displayName: pi_parent_name || 'Grandparent',
+                attributeDefinition: {
+                    Name: '__grandparent',
+                    Sortable: false,
+                    AttributeType: 'TSExtended',
+                    Constrained: false
+                },
+                convert: function(value,record) {
+                    var pi = record.get(pi_name);
+                    if ( Ext.isEmpty(pi) || Ext.isEmpty(pi.Parent) ) {
+                        return "None";
+                    }
+                    return pi.Parent.FormattedID + ": " + pi.Parent.Name;
+                }
             }],
-            
+            isArtifact: function() {
+                return false;
+            },
             _loadRecordsWithAPromise: me._loadRecordsWithAPromise
         });
     },
@@ -1022,6 +1067,7 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
     }
 });
 
+
 Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     extend: 'Rally.app.App',
     requires: [
@@ -1048,6 +1094,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     settingsScope: 'project',
     autoScroll: false,
     
+    model: null,
+    
     config: {
         defaultSettings: {
             groupByField: 'ScheduleState',
@@ -1068,17 +1116,22 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     launch: function() {
-        Rally.technicalservices.ModelBuilder.getModel('HierarchicalRequirement').then({
+        Deft.Promise.all([
+            Rally.technicalservices.ModelBuilder.getPINames(),
+            Rally.technicalservices.ModelBuilder.getModel('HierarchicalRequirement')
+        ]).then({
             scope: this,
-            success: function(model) {
-                Rally.technicalservices.ModelBuilder.build(model);
+            success: function(results) {
+                var pi_names = results[0];
+                console.log(pi_names);
+                var model = Rally.technicalservices.ModelBuilder.build(results[1],pi_names[pi_names.length-2]);
+                
+                this.model = model;
                 this._setUpCardboard(model);
             },
             failure: function(msg) {
                 Ext.Msg.alert(msg);
             }
-//            success: this._onStoryModelRetrieved,
-//            scope: this
         });
         this.subscribe(Rally.Message.objectUpdate, this._onReadyFieldChanged, this);
         
@@ -1112,7 +1165,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     getSettingsFields: function() {
         return Rally.apps.kanban.Settings.getFields({
             shouldShowColumnLevelFieldPicker: this._shouldShowColumnLevelFieldPicker(),
-            defaultCardFields: this.getSetting('cardFields')
+            defaultCardFields: this.getSetting('cardFields'),
+            model: this.model
         });
     },
 
@@ -1133,13 +1187,13 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     _setUpCardboard: function(model) {
         this.groupByField = model.getField(this.getSetting('groupByField'));
-        this._addCardboardContent();
+        this._addCardboardContent(model);
     },
 
-    _addCardboardContent: function() {
+    _addCardboardContent: function(model) {
         if ( this.gridboard) { this.gridboard.destroy(); }
                 
-        var cardboardConfig = this._getCardboardConfig();
+        var cardboardConfig = this._getCardboardConfig(model);
 
         var columnSetting = this._getColumnSetting();
         if (columnSetting) {
@@ -1215,9 +1269,15 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     _getColumnConfig: function(columnSetting) {
         var columns = [];
+        var me = this;
+        
         Ext.Object.each(columnSetting, function(column, values) {
             var columnConfig = {
                 xtype: 'kanbancolumn',
+                storeConfig: {
+                    model: me.model
+                },
+                additionalFetchFields: ['Feature','Parent'],
                 enableWipLimit: true,
                 wipLimit: values.wip,
                 plugins: [{
@@ -1265,9 +1325,10 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     
-    _getCardboardConfig: function() {
+    _getCardboardConfig: function(model) {
         var config = {
             xtype: 'rallycardboard',
+            models: [model],
             plugins: [
                 {ptype: 'rallycardboardprinting', pluginId: 'print'},
                 {
@@ -1298,6 +1359,9 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             },
             storeConfig: {
                 context: this.getContext().getDataContext()
+            },
+            shouldRetrieveModels: function () {
+                return false;
             }
         };
         if (this.getSetting('showRows')) {

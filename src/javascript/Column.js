@@ -9,7 +9,8 @@ Ext.define('Rally.apps.kanban.Column', {
     getStoreFilter: function (model) {
         var filters = [];
         Ext.Array.push(filters, this.callParent(arguments));
-        if (model.elementName === 'HierarchicalRequirement') {
+        
+        if (model.elementName === 'HierarchicalRequirement' ) {
             if (this.context.getSubscription().StoryHierarchyEnabled) {
                 filters.push({
                     property: 'DirectChildrenCount',

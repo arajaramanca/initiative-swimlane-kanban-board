@@ -46,10 +46,16 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     launch: function() {
-        Rally.technicalservices.ModelBuilder.getModel('HierarchicalRequirement').then({
+        Deft.Promise.all([
+            Rally.technicalservices.ModelBuilder.getPINames(),
+            Rally.technicalservices.ModelBuilder.getModel('HierarchicalRequirement')
+        ]).then({
             scope: this,
-            success: function(story_model) {
-                var model = Rally.technicalservices.ModelBuilder.build(story_model);
+            success: function(results) {
+                var pi_names = results[0];
+                console.log(pi_names);
+                var model = Rally.technicalservices.ModelBuilder.build(results[1],pi_names[pi_names.length-2]);
+                
                 this.model = model;
                 this._setUpCardboard(model);
             },
@@ -111,13 +117,13 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     _setUpCardboard: function(model) {
         this.groupByField = model.getField(this.getSetting('groupByField'));
-        this._addCardboardContent();
+        this._addCardboardContent(model);
     },
 
-    _addCardboardContent: function() {
+    _addCardboardContent: function(model) {
         if ( this.gridboard) { this.gridboard.destroy(); }
                 
-        var cardboardConfig = this._getCardboardConfig();
+        var cardboardConfig = this._getCardboardConfig(model);
 
         var columnSetting = this._getColumnSetting();
         if (columnSetting) {
@@ -193,9 +199,15 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     _getColumnConfig: function(columnSetting) {
         var columns = [];
+        var me = this;
+        
         Ext.Object.each(columnSetting, function(column, values) {
             var columnConfig = {
                 xtype: 'kanbancolumn',
+                storeConfig: {
+                    model: me.model
+                },
+                additionalFetchFields: ['Feature','Parent'],
                 enableWipLimit: true,
                 wipLimit: values.wip,
                 plugins: [{
@@ -243,9 +255,10 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     
-    _getCardboardConfig: function() {
+    _getCardboardConfig: function(model) {
         var config = {
             xtype: 'rallycardboard',
+            models: [model],
             plugins: [
                 {ptype: 'rallycardboardprinting', pluginId: 'print'},
                 {
@@ -276,6 +289,9 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             },
             storeConfig: {
                 context: this.getContext().getDataContext()
+            },
+            shouldRetrieveModels: function () {
+                return false;
             }
         };
         if (this.getSetting('showRows')) {

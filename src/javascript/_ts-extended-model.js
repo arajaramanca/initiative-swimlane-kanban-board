@@ -1,5 +1,6 @@
 Ext.define('Rally.technicalservices.ModelBuilder',{
     singleton: true,
+    
     getModel: function(modelType){
         var deferred = Ext.create('Deft.Deferred');
         Rally.data.ModelFactory.getModel({
@@ -10,23 +11,92 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
         });
         return deferred;
     },
-    build: function(model) {
+    
+    getPINames: function() {
+        var deferred = Ext.create('Deft.Deferred');
+        console.log('getPINames');
+        
+        var store_config = {
+            autoLoad: false,
+            remoteFilter: true,
+            model: Ext.identityFn('TypeDefinition'),
+            sorters: {
+                property: 'Ordinal',
+                direction: 'Desc'
+            },
+            filters: [
+                {
+                    property: 'Parent.Name',
+                    operator: '=',
+                    value: 'Portfolio Item'
+                },
+                {
+                    property: 'Creatable',
+                    operator: '=',
+                    value: 'true'
+                }
+            ]
+        };
+        
+        Ext.create('Rally.data.wsapi.Store', store_config).load({
+            callback : function(records, operation, successful) {
+                if (successful){
+                    deferred.resolve(Ext.Array.map(records,function(record) {
+                        return record.get('ElementName');
+                    }));
+                } else {
+                    console.error("Failed: ", operation);
+                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
+                }
+            }
+        });
+        
+        return deferred;
+    },
+    
+    build: function(model,pi_parent_name) {
         var me = this;
         
-        return Ext.define('Rally.technicalservices.model.ExtendedModel', {
+        console.log('build with', pi_parent_name);
+        
+        var pi_fields = Ext.Array.filter(model.getFields(), function(field) {
+            return (
+                !Ext.isEmpty(field.attributeDefinition) &&  
+                    /PortfolioItem/.test(field.attributeDefinition.SchemaType) &&
+                    field.name !== 'PortfolioItem'
+            );
+        });
+        
+        var pi_name = 'Feature';
+        
+        if ( pi_fields.length > 0 ) {
+            pi_name = pi_fields[0].name;
+        }
+        
+        return Ext.define('Rally.technicalservices.model.TSExtendedModel', {
             extend: model,
+            elementName: 'TSExtendedModel',
             fields: [{
-                name: '__grandparent',
-                defaultValue: -1,
-                displayName: 'Grandparent',
+                name: pi_name + '.Parent',
+                defaultValue: 'None',
+                displayName: pi_parent_name || 'Grandparent',
                 attributeDefinition: {
                     Name: '__grandparent',
-                    Sortable: true,
+                    Sortable: false,
                     AttributeType: 'TSExtended',
-                    Constrained: true
+                    Constrained: false
+                },
+                convert: function(value,record) {
+                    var pi = record.get(pi_name);
+                    if ( Ext.isEmpty(pi) || Ext.isEmpty(pi.Parent) ) {
+                        return "None";
+                    }
+                    return pi.Parent.FormattedID + ": " + pi.Parent.Name;
                 }
             }],
-            
+            isArtifact: function() {
+                return false;
+            },
             _loadRecordsWithAPromise: me._loadRecordsWithAPromise
         });
     },

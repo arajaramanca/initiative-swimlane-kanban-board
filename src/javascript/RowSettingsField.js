@@ -139,7 +139,7 @@ Ext.define('Rally.apps.common.RowSettingsField', {
             var allFields = Rally.getApp().model.getFields();
             rowableFields = _.filter(allFields, function (field) {
                 var attr = field.attributeDefinition;
-                return attr && !attr.Hidden && attr.Sortable &&
+                return attr && !attr.Hidden  &&
                     ( this.isAllowedFieldFn(field) || _.contains(this.whiteListFields, field.displayName));
             }, this);
         } else {

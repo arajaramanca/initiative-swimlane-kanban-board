@@ -279,7 +279,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             },
             columnConfig: {
                 xtype: 'rallycardboardcolumn',
-                enableWipLimit: true
+                enableWipLimit: true,
+                dropControllerConfig: false
             },
             cardConfig: {
                 editable: true,
@@ -449,46 +450,29 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
     
     _onBeforeCardSaved: function(column, card, type) {
-        var columnSetting = this._getColumnSetting();
-        var cardboardSetting = this.getSettings();
-
-        var me = this;
-        
-        if (columnSetting) {
-            var setting = columnSetting[column.getValue()];
-            if (setting && setting.scheduleStateMapping) {
-                card.getRecord().set('ScheduleState', setting.scheduleStateMapping);
-            }
-            
-            if (setting && setting.stateMapping && card.getRecord().get('_type') == 'defect') {
-                card.getRecord().set('State', setting.stateMapping);
-            }
-            
-            if (setting && setting.reasonMapping && card.getRecord().get('_type') == 'defect' ) {
-                card.getRecord().set(cardboardSetting.changeReasonField, setting.reasonMapping);
-            }
-        }
-        
-        return true;
-        
-//        if (cardboardSetting && cardboardSetting.showChangeReasonPopup ) {
-//            card.getRecord().set(cardboardSetting.changeReasonField,null);
-//            Ext.create('Rally.ui.dialog.ChangeReasonDialog', {
-//                autoShow: true,
-//                draggable: true,
-//                width: 200,
-//                modal: true,
-//                dropdownField: cardboardSetting.changeReasonField,
-//                model: 'UserStory',
-//                listeners: {
-//                    scope: this,
-//                    valuechosen: function(dialog, selected_value) {
-//                        card.getRecord().set(cardboardSetting.changeReasonField,selected_value);
-//                        card.getRecord().save();
-//                    }
-//                }
-//            });
+        return false;
+//        var columnSetting = this._getColumnSetting();
+//        var cardboardSetting = this.getSettings();
+//
+//        var me = this;
+//        
+//        if (columnSetting) {
+//            var setting = columnSetting[column.getValue()];
+//            if (setting && setting.scheduleStateMapping) {
+//                card.getRecord().set('ScheduleState', setting.scheduleStateMapping);
+//            }
+//            
+//            if (setting && setting.stateMapping && card.getRecord().get('_type') == 'defect') {
+//                card.getRecord().set('State', setting.stateMapping);
+//            }
+//            
+//            if (setting && setting.reasonMapping && card.getRecord().get('_type') == 'defect' ) {
+//                card.getRecord().set(cardboardSetting.changeReasonField, setting.reasonMapping);
+//            }
 //        }
+//        
+//        return true;
+        
     },
 
     _publishContentUpdated: function() {

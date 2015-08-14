@@ -3,11 +3,11 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sat Aug 08 2015 18:13:01 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Aug 14 2015 15:05:16 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sat Aug 08 2015 18:13:01 GMT-0700 (PDT)";
-        var CHECKSUM = 48646031726;
+        var APP_BUILD_DATE = "Fri Aug 14 2015 15:05:16 GMT-0700 (PDT)";
+        var CHECKSUM = 50409811505;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -1067,7 +1067,26 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
     }
 });
 
-
+/*
+ * Need to override so that the picker can use the underlying story model
+ * (instead of using the model factory which won't know what an extended model is)
+ */Ext.override(Rally.ui.gridboard.plugin.GridBoardFieldPicker,{
+    _getModels: function() {
+        console.log('_getModels', this.modelNames );
+        if ( Ext.isEmpty( this.modelNames ) ) {
+            return _.reduce(this.cmp.getModels(), function(accum, model) {
+                if (model.typePath === 'artifact') {
+                    accum = accum.concat(model.getArtifactComponentModels());
+                } else {
+                    accum.push(model);
+                }
+                return accum;
+            }, []);
+        } else {
+            return [{ typePath: 'HierarchicalRequirement' }];
+        }
+    }
+});
 Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     extend: 'Rally.app.App',
     requires: [
@@ -1233,7 +1252,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                         blackListFields: [],
                         whiteListFields: ['Milestones'],
                         margin: '3 9 3 30',
-                        modelNames: modelNames,
+                        modelNames: ['HierarchicalRequirement'],
                         stateful: true,
                         stateId: context.getScopedStateId('kanban-custom-filter-button')
                     },
@@ -1247,7 +1266,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                     ptype: 'rallygridboardfieldpicker',
                     headerPosition: 'left',
                     boardFieldBlackList: blacklist,
-                    modelNames: modelNames,
+                    modelNames: ['HierarchicalRequirement'],
                     boardFieldDefaults: this.getSetting('cardFields').split(',')
                 },
                 {

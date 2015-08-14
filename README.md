@@ -6,6 +6,10 @@ the parent is Initiative, but this app does not care.)
 
 ## Development Notes
 
+* We use an extended model to define the second level PI as a field so we can make swimlanes.
+* Because it's an extended model, anything that uses the model factory will fail.  For example, we had to override the field picker plugin to force it to use fields from stories because it failed on searching for the extended model.
+ 
+
 ### First Load
 
 If you've just downloaded this from github and you want to do development, 

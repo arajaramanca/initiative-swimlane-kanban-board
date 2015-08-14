@@ -163,7 +163,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                         blackListFields: [],
                         whiteListFields: ['Milestones'],
                         margin: '3 9 3 30',
-                        modelNames: modelNames,
+                        modelNames: ['HierarchicalRequirement'],
                         stateful: true,
                         stateId: context.getScopedStateId('kanban-custom-filter-button')
                     },
@@ -177,7 +177,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                     ptype: 'rallygridboardfieldpicker',
                     headerPosition: 'left',
                     boardFieldBlackList: blacklist,
-                    modelNames: modelNames,
+                    modelNames: ['HierarchicalRequirement'],
                     boardFieldDefaults: this.getSetting('cardFields').split(',')
                 },
                 {

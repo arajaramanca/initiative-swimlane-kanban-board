@@ -3,11 +3,11 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Fri Aug 14 2015 15:05:16 GMT-0700 (PDT) -->
+    <!--  Build Date: Fri Aug 14 2015 15:42:59 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Fri Aug 14 2015 15:05:16 GMT-0700 (PDT)";
-        var CHECKSUM = 50409811505;
+        var APP_BUILD_DATE = "Fri Aug 14 2015 15:42:59 GMT-0700 (PDT)";
+        var CHECKSUM = 50254501170;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -950,7 +950,6 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
     
     getPINames: function() {
         var deferred = Ext.create('Deft.Deferred');
-        console.log('getPINames');
         
         var store_config = {
             autoLoad: false,
@@ -1142,7 +1141,6 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             scope: this,
             success: function(results) {
                 var pi_names = results[0];
-                console.log(pi_names);
                 var model = Rally.technicalservices.ModelBuilder.build(results[1],pi_names[pi_names.length-2]);
                 
                 this.model = model;
@@ -1210,8 +1208,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     _addCardboardContent: function(model) {
-        if ( this.gridboard) { this.gridboard.destroy(); }
-                
+        if ( this.gridboard) { this.removeAll(false); }
         var cardboardConfig = this._getCardboardConfig(model);
 
         var columnSetting = this._getColumnSetting();

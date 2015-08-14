@@ -14,7 +14,6 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
     
     getPINames: function() {
         var deferred = Ext.create('Deft.Deferred');
-        console.log('getPINames');
         
         var store_config = {
             autoLoad: false,

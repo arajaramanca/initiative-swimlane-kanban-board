@@ -53,7 +53,6 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             scope: this,
             success: function(results) {
                 var pi_names = results[0];
-                console.log(pi_names);
                 var model = Rally.technicalservices.ModelBuilder.build(results[1],pi_names[pi_names.length-2]);
                 
                 this.model = model;
@@ -121,8 +120,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
 
     _addCardboardContent: function(model) {
-        if ( this.gridboard) { this.gridboard.destroy(); }
-                
+        if ( this.gridboard) { this.removeAll(false); }
         var cardboardConfig = this._getCardboardConfig(model);
 
         var columnSetting = this._getColumnSetting();

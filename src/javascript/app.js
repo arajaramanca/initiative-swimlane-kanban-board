@@ -292,8 +292,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             },
             columnConfig: {
                 xtype: 'rallycardboardcolumn',
-                enableWipLimit: true,
-                dropControllerConfig: false
+                enableWipLimit: true
             },
             cardConfig: {
                 editable: true,
@@ -310,7 +309,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
         };
         
         var rowConfig = {
-            // TODO: enableCrossRowDragging: false,
+            enableCrossRowDragging: false,
             field: this.getSetting('rowsField'),
             sortDirection: 'ASC'
         };
@@ -499,28 +498,28 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     },
     
     _onBeforeCardSaved: function(column, card, type) {
-        return false;
-//        var columnSetting = this._getColumnSetting();
-//        var cardboardSetting = this.getSettings();
-//
-//        var me = this;
-//        
-//        if (columnSetting) {
-//            var setting = columnSetting[column.getValue()];
-//            if (setting && setting.scheduleStateMapping) {
-//                card.getRecord().set('ScheduleState', setting.scheduleStateMapping);
-//            }
-//            
-//            if (setting && setting.stateMapping && card.getRecord().get('_type') == 'defect') {
-//                card.getRecord().set('State', setting.stateMapping);
-//            }
-//            
-//            if (setting && setting.reasonMapping && card.getRecord().get('_type') == 'defect' ) {
-//                card.getRecord().set(cardboardSetting.changeReasonField, setting.reasonMapping);
-//            }
-//        }
-//        
-//        return true;
+        
+        var columnSetting = this._getColumnSetting();
+        var cardboardSetting = this.getSettings();
+
+        var me = this;
+        
+        if (columnSetting) {
+            var setting = columnSetting[column.getValue()];
+            if (setting && setting.scheduleStateMapping) {
+                card.getRecord().set('ScheduleState', setting.scheduleStateMapping);
+            }
+            
+            if (setting && setting.stateMapping && card.getRecord().get('_type') == 'defect') {
+                card.getRecord().set('State', setting.stateMapping);
+            }
+            
+            if (setting && setting.reasonMapping && card.getRecord().get('_type') == 'defect' ) {
+                card.getRecord().set(cardboardSetting.changeReasonField, setting.reasonMapping);
+            }
+        }
+        
+        return true;
         
     },
 

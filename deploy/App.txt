@@ -3,11 +3,11 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Aug 16 2015 12:53:02 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Aug 16 2015 13:00:18 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Aug 16 2015 12:53:02 GMT-0700 (PDT)";
-        var CHECKSUM = 55772827780;
+        var APP_BUILD_DATE = "Sun Aug 16 2015 13:00:18 GMT-0700 (PDT)";
+        var CHECKSUM = 55846425831;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -1343,7 +1343,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 storeConfig: {
                     model: me.model
                 },
-                additionalFetchFields: ['Feature','Parent'],
+                additionalFetchFields: ['Feature','Parent',me.needByDateFieldName],
                 enableWipLimit: true,
                 wipLimit: values.wip,
                 plugins: [{

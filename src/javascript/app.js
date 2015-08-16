@@ -223,7 +223,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 storeConfig: {
                     model: me.model
                 },
-                additionalFetchFields: ['Feature','Parent'],
+                additionalFetchFields: ['Feature','Parent',me.needByDateFieldName],
                 enableWipLimit: true,
                 wipLimit: values.wip,
                 plugins: [{

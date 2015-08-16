@@ -3,11 +3,11 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Aug 16 2015 11:02:58 GMT-0700 (PDT) -->
+    <!--  Build Date: Sun Aug 16 2015 12:53:02 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Aug 16 2015 11:02:58 GMT-0700 (PDT)";
-        var CHECKSUM = 52994229838;
+        var APP_BUILD_DATE = "Sun Aug 16 2015 12:53:02 GMT-0700 (PDT)";
+        var CHECKSUM = 55772827780;
     </script>
     
     <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
@@ -760,6 +760,13 @@ Ext.define('Rally.apps.kanban.Settings', {
                 boxLabel: 'Hide cards in last visible column if assigned to a release'
             },
             {
+                name: 'colorByNeedByDate',
+                xtype: 'rallycheckboxfield',
+                fieldLabel: ' ',
+                margin: '10 0 0 0',
+                boxLabel: 'Mark as red if past the Need By Date'
+            },
+            {
                 type: 'cardage',
                 config: {
                     fieldLabel: '',
@@ -1066,6 +1073,31 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
     }
 });
 
+Ext.override(Rally.ui.cardboard.Card,{
+    needByDateField: null,
+    colorByNeedByDate: false,
+    
+    isBeyondNeedByDate: function() {
+        var record = this.getRecord();
+        var today = new Date();
+                
+        return record.isFieldVisible(this.needByDateField) && record.get(this.needByDateField) && today > record.get(this.needByDateField);
+    },
+    
+    _onBeforeRender: function () {
+        this._displayState();
+        this._addNeedByDateDecorator();
+        this.html = this._buildHtml();
+    },
+    
+    _addNeedByDateDecorator: function() {
+        
+        if (this.colorByNeedByDate && this.isBeyondNeedByDate()) {
+            this.addCls('beyondDate');
+        }
+    }
+    
+});
 /*
  * Need to override so that the picker can use the underlying story model
  * (instead of using the model factory which won't know what an extended model is)
@@ -1114,6 +1146,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     
     model: null,
     
+    needByDateFieldName: 'c_NeedByDate',
+    
     config: {
         defaultSettings: {
             groupByField: 'ScheduleState',
@@ -1126,6 +1160,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             }),
             cardFields: 'FormattedID,Name,Owner,Discussion,Tasks,Defects', //remove with COLUMN_LEVEL_FIELD_PICKER_ON_KANBAN_SETTINGS
             hideReleasedCards: false,
+            colorByNeedByDate: true,
             showCardAge: true,
             cardAgeThreshold: 3,
             pageSize: 25
@@ -1357,6 +1392,9 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     
     _getCardboardConfig: function(model) {
+        var me = this;
+        var need_by_date_field = this.needByDateFieldName;
+        
         var config = {
             xtype: 'rallycardboard',
             models: [model],
@@ -1386,7 +1424,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 editable: true,
                 showIconMenus: true,
                 showAge: this.getSetting('showCardAge') ? this.getSetting('cardAgeThreshold') : -1,
-                showBlockedReason: true
+                needByDateField: need_by_date_field,
+                colorByNeedByDate: me.getSetting('colorByNeedByDate')
             },
             storeConfig: {
                 context: this.getContext().getDataContext()
@@ -1672,6 +1711,10 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     margin-top: 25px;
     margin-right: 5px;
     cursor: pointer;
+}
+
+.rui-card.beyondDate .card-table-ct {
+    background: #FFCCCC;
 }
     </style>
 

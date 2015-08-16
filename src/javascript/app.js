@@ -26,6 +26,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
     
     model: null,
     
+    needByDateFieldName: 'c_NeedByDate',
+    
     config: {
         defaultSettings: {
             groupByField: 'ScheduleState',
@@ -38,6 +40,7 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             }),
             cardFields: 'FormattedID,Name,Owner,Discussion,Tasks,Defects', //remove with COLUMN_LEVEL_FIELD_PICKER_ON_KANBAN_SETTINGS
             hideReleasedCards: false,
+            colorByNeedByDate: true,
             showCardAge: true,
             cardAgeThreshold: 3,
             pageSize: 25
@@ -269,6 +272,9 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
 
     
     _getCardboardConfig: function(model) {
+        var me = this;
+        var need_by_date_field = this.needByDateFieldName;
+        
         var config = {
             xtype: 'rallycardboard',
             models: [model],
@@ -298,7 +304,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 editable: true,
                 showIconMenus: true,
                 showAge: this.getSetting('showCardAge') ? this.getSetting('cardAgeThreshold') : -1,
-                showBlockedReason: true
+                needByDateField: need_by_date_field,
+                colorByNeedByDate: me.getSetting('colorByNeedByDate')
             },
             storeConfig: {
                 context: this.getContext().getDataContext()

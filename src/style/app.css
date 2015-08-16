@@ -15,3 +15,7 @@
     margin-right: 5px;
     cursor: pointer;
 }
+
+.rui-card.beyondDate .card-table-ct {
+    background: #FFCCCC;
+}

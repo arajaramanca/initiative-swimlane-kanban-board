@@ -86,6 +86,13 @@ Ext.define('Rally.apps.kanban.Settings', {
                 boxLabel: 'Hide cards in last visible column if assigned to a release'
             },
             {
+                name: 'colorByNeedByDate',
+                xtype: 'rallycheckboxfield',
+                fieldLabel: ' ',
+                margin: '10 0 0 0',
+                boxLabel: 'Mark as red if past the Need By Date'
+            },
+            {
                 type: 'cardage',
                 config: {
                     fieldLabel: '',

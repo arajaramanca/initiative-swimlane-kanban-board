@@ -90,7 +90,7 @@ Ext.define('Rally.technicalservices.ModelBuilder',{
                     if ( Ext.isEmpty(pi) || Ext.isEmpty(pi.Parent) ) {
                         return "None";
                     }
-                    return pi.Parent.FormattedID + ": " + pi.Parent.Name;
+                    return pi.Parent;
                 }
             }],
             isArtifact: function() {

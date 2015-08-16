@@ -53,7 +53,7 @@ Ext.define('Rally.apps.kanban.ColumnSettingsField', {
         this.callParent(arguments);
 
         this._store = Ext.create('Ext.data.Store', {
-            fields: ['column', 'shown', 'wip', 'scheduleStateMapping', 'stateMapping', 'readyMapping', 'cardFields', 'reasonMapping'],
+            fields: ['column', 'shown', 'wip', 'scheduleStateMapping'],
             data: []
         });
 

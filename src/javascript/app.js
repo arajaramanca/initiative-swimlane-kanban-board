@@ -36,7 +36,6 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 Completed: {wip: ''},
                 Accepted: {wip: ''}
             }),
-            changeReasonField: 'Resolution',
             cardFields: 'FormattedID,Name,Owner,Discussion,Tasks,Defects', //remove with COLUMN_LEVEL_FIELD_PICKER_ON_KANBAN_SETTINGS
             hideReleasedCards: false,
             showCardAge: true,
@@ -53,10 +52,26 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
             scope: this,
             success: function(results) {
                 var pi_names = results[0];
-                var model = Rally.technicalservices.ModelBuilder.build(results[1],pi_names[pi_names.length-2]);
-                
+                var story_model = results[1];
+                var pi_level2_name = pi_names[pi_names.length-2];
+                var model = Rally.technicalservices.ModelBuilder.build(story_model,pi_level2_name);
                 this.model = model;
-                this._setUpCardboard(model);
+                
+                if ( this.getSetting('showRows') ) { 
+                    this._loadPIs(pi_level2_name).then({
+                        scope: this,
+                        success: function(level2_pis) {
+                            this.row_values = level2_pis;
+                            this._setUpCardboard(model);
+                        },
+                        failure: function(msg) {
+                            Ext.Msg.alert(msg);
+                        }
+                    });
+                } else {
+                    this._setUpCardboard(model);                    
+                }
+                
             },
             failure: function(msg) {
                 Ext.Msg.alert(msg);
@@ -77,12 +92,12 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 text: 'Show Throughput Report',
                 handler: this._showThroughputReport,
                 scope: this
-            },
+            }/*,
             {
                 text: 'Print',
                 handler: this._print,
                 scope: this
-            },
+            }*/,
             {
                 text: 'About...',
                 handler: this._launchInfo,
@@ -293,12 +308,19 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 return false;
             }
         };
+        
+        var rowConfig = {
+            // TODO: enableCrossRowDragging: false,
+            field: this.getSetting('rowsField'),
+            sortDirection: 'ASC'
+        };
+        
+        if ( this.row_values ) { 
+            rowConfig.values = this.row_values;
+        }
         if (this.getSetting('showRows')) {
             Ext.merge(config, {
-                rowConfig: {
-                    field: this.getSetting('rowsField'),
-                    sortDirection: 'ASC'
-                }
+                rowConfig: rowConfig
             });
         }
         return config;
@@ -395,6 +417,35 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 scope: this
             }
         });
+    },
+    
+    _loadPIs: function(pi_name) {
+        var deferred = Ext.create('Deft.Deferred');
+        var me = this;
+        
+        this.logger.log("Load PIs of type: ", pi_name);
+        var store_config = {
+            autoLoad: false,
+            remoteFilter: true,
+            model: 'portfolioitem/' + pi_name,
+            sorters: [{property:'ObjectID'}],
+            filters: [{property:'LeafStoryCount',operator: '>', value: 0}]
+        };
+        
+        Ext.create('Rally.data.wsapi.Store', store_config).load({
+            callback : function(records, operation, successful) {
+                if (successful){
+                    me.logger.log("Found ", records.length);
+                    
+                    deferred.resolve(Ext.Array.map( records, function(record) { return record.getData(); }));
+                } else {
+                    console.error("Failed: ", operation);
+                    deferred.reject('Problem loading: ' + operation.error.errors.join('. '));
+                }
+            }
+        });
+        
+        return deferred;
     },
 
     _onBoardLoad: function() {

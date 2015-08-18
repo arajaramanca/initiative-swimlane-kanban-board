@@ -278,6 +278,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
         var config = {
             xtype: 'rallycardboard',
             models: [model],
+            margin: '2 2 10 2',
+            padding: '2 2 10 2',
             plugins: [
                 {ptype: 'rallycardboardprinting', pluginId: 'print'},
                 {

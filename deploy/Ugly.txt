@@ -3,10 +3,10 @@
 <head>
     <title>Initiative Swimlanes Kanban Board</title>
     <!--  (c) 2015 Rally Software Development Corp.  All Rights Reserved. -->
-    <!--  Build Date: Sun Aug 16 2015 13:00:18 GMT-0700 (PDT) -->
+    <!--  Build Date: Tue Aug 18 2015 12:51:59 GMT-0700 (PDT) -->
     
     <script type="text/javascript">
-        var APP_BUILD_DATE = "Sun Aug 16 2015 13:00:18 GMT-0700 (PDT)";
+        var APP_BUILD_DATE = "Tue Aug 18 2015 12:51:59 GMT-0700 (PDT)";
         var CHECKSUM = [%= checksum %];
     </script>
     

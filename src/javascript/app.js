@@ -59,8 +59,8 @@ Ext.define("TSInitiativeSwimlaneKanbanBoard", {
                 var pi_level2_name = pi_names[pi_names.length-2];
                 var model = Rally.technicalservices.ModelBuilder.build(story_model,pi_level2_name);
                 this.model = model;
-                
-                if ( this.getSetting('showRows') ) { 
+                console.log('pi_level2_name',pi_level2_name, this.getSetting('rowsField'), this.getSetting('showRows'));
+                if ( this.getSetting('showRows') && pi_level2_name == this.getSetting('rowsField')) { 
                     this._loadPIs(pi_level2_name).then({
                         scope: this,
                         success: function(level2_pis) {
